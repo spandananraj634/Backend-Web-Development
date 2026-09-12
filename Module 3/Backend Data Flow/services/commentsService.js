@@ -26,7 +26,9 @@ exports.addComment = async (postId, userId, body) => {
 
   // writes after, in order
   const comment = await commentsRepo.insert({ postId, authorId: userId, body });
-  await postsRepo.incrementCommentCount(postId);
+  if (!comment) throw new AppError('Failed to create comment', 500);
 
+  await postsRepo.incrementCommentCount(postId);
+  
   return comment;
 };
