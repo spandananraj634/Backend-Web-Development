@@ -1,35 +1,33 @@
-// src/repositories/postRepository.js — Map-backed version
-const postStore = require('../data/postStore');
+// src/repositories/postRepository.js
+let posts = [];
+let nextId = 1;
 
 function findAll() {
-  return [...postStore.posts.values()];
+  return [...posts];  // return a copy, not the live array
 }
 
 function findById(id) {
-  return postStore.posts.get(Number(id)) || null;
+  return posts.find(p => p.id === Number(id)) || null;
 }
 
-function create(fields) {
-  const post = {
-    id: postStore.nextId(),
-    title: fields.title,
-    body: fields.body || '',
-    authorId: fields.authorId,
-  };
-  postStore.posts.set(post.id, post);
-  return post;
+function create(input) {
+  const post = { id: nextId++, ...input, createdAt: Date.now() };
+  posts.push(post);
+  return { ...post };  // return a copy
 }
 
 function update(id, patch) {
-  const post = findById(id);
-  if (!post) return null;
-  if (patch.title !== undefined) post.title = patch.title;
-  if (patch.body !== undefined) post.body = patch.body;
-  return post;
+  const index = posts.findIndex(p => p.id === Number(id));
+  if (index === -1) return null;
+  posts[index] = { ...posts[index], ...patch };
+  return { ...posts[index] };
 }
 
 function remove(id) {
-  return postStore.posts.delete(Number(id));
+  const index = posts.findIndex(p => p.id === Number(id));
+  if (index === -1) return false;
+  posts.splice(index, 1);
+  return true;
 }
 
 module.exports = { findAll, findById, create, update, remove };
